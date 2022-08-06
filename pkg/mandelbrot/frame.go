@@ -8,9 +8,10 @@ import (
 )
 
 type RenderConfig struct {
-	Zoom    float64
-	TargetX float64
-	TargetY float64
+	MaxIterations int
+	Zoom          float64
+	TargetX       float64
+	TargetY       float64
 }
 
 func Render(cfg RenderConfig, image *image.Paletted, palette color.Palette) error {
@@ -21,7 +22,7 @@ func Render(cfg RenderConfig, image *image.Paletted, palette color.Palette) erro
 	if err := s.Target(cfg.TargetX, cfg.TargetY); err != nil {
 		return fmt.Errorf("targeting: %w", err)
 	}
-	pg := newPixelGenerator(1000)
+	pg := newPixelGenerator(cfg.MaxIterations)
 	for x := 0; x < image.Bounds().Dx(); x++ {
 		for y := 0; y < image.Bounds().Dy(); y++ {
 			mx, my, err := s.Transform(x, y)

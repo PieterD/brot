@@ -11,10 +11,11 @@ import (
 )
 
 type AnimationConfig struct {
-	Width  int
-	Height int
-	FPS    int
-	Path   []AnimationConfigPathElement
+	Width         int
+	Height        int
+	FPS           int
+	MaxIterations int
+	Path          []AnimationConfigPathElement
 }
 
 type AnimationConfigPathElement struct {
@@ -23,6 +24,48 @@ type AnimationConfigPathElement struct {
 	TargetY     float64
 	RawDuration string        `json:"Duration"`
 	Duration    time.Duration `json:"-"`
+}
+
+func (cfg AnimationConfig) Validate() error {
+	if cfg.FPS <= 0 {
+		return fmt.Errorf("invalid FPS (%d)", cfg.FPS)
+	}
+	if cfg.MaxIterations <= 0 {
+		return fmt.Errorf("invalid MaxIterations (%d)", cfg.MaxIterations)
+	}
+	if cfg.Width <= 0 {
+		return fmt.Errorf("invalid Width (%d)", cfg.Width)
+	}
+	if cfg.Height <= 0 {
+		return fmt.Errorf("invalid Height (%d)", cfg.Height)
+	}
+	if len(cfg.Path) == 0 {
+		return fmt.Errorf("at least one Path element is required")
+	}
+	for i, pe := range cfg.Path {
+		if err := pe.Validate(i == 0); err != nil {
+			return fmt.Errorf("path element (%d): %w", i, err)
+		}
+	}
+	return nil
+}
+
+func (cfg AnimationConfigPathElement) Validate(first bool) error {
+	switch {
+	case first && cfg.Duration == 0:
+	case first && cfg.Duration != 0:
+		return fmt.Errorf("first Path element cannot have a Duration")
+	case !first && cfg.Duration == 0:
+		return fmt.Errorf("non-first Path element must have a Duration")
+	case !first && cfg.Duration != 0:
+	}
+	if cfg.TargetX < 0 || cfg.TargetX > 1 || cfg.TargetY < 0 || cfg.TargetY > 1 {
+		return fmt.Errorf("target (%f,%f) is out of bounds", cfg.TargetX, cfg.TargetY)
+	}
+	if cfg.Zoom < 1 {
+		return fmt.Errorf("zoom (%f) cannot be below 1", cfg.Zoom)
+	}
+	return nil
 }
 
 func NewAnimateConfigFromFile(filePath string) (AnimationConfig, error) {
@@ -64,8 +107,22 @@ func Animate(cfg AnimationConfig, palette color.Palette) (*gif.GIF, error) {
 		},
 		BackgroundIndex: 0,
 	}
-	if len(cfg.Path) < 2 {
-		return nil, fmt.Errorf("at least two path elements are required")
+	if len(cfg.Path) < 1 {
+		return nil, fmt.Errorf("at least one path elements are required")
+	}
+	if len(cfg.Path) == 1 {
+		renderCfg := RenderConfig{
+			MaxIterations: cfg.MaxIterations,
+			Zoom:          cfg.Path[0].Zoom,
+			TargetX:       cfg.Path[0].TargetX,
+			TargetY:       cfg.Path[0].TargetY,
+		}
+		imgRect := image.Rect(0, 0, cfg.Width, cfg.Height)
+		img := image.NewPaletted(imgRect, palette)
+		if err := Render(renderCfg, img, palette); err != nil {
+			return nil, fmt.Errorf("rendering single frame: %w", err)
+		}
+
 	}
 	for i := 1; i < len(cfg.Path); i++ {
 		from := cfg.Path[i-1]
@@ -94,9 +151,10 @@ func animatePathLink(cfg AnimationConfig, includeFirst bool, palette color.Palet
 		imgRect := image.Rect(0, 0, cfg.Width, cfg.Height)
 		img := image.NewPaletted(imgRect, palette)
 		renderCfg := RenderConfig{
-			Zoom:    zoomInterp.At(currentFrame),
-			TargetX: xInterp.At(currentFrame),
-			TargetY: yInterp.At(currentFrame),
+			MaxIterations: cfg.MaxIterations,
+			Zoom:          zoomInterp.At(currentFrame),
+			TargetX:       xInterp.At(currentFrame),
+			TargetY:       yInterp.At(currentFrame),
 		}
 		if err := Render(renderCfg, img, palette); err != nil {
 			return fmt.Errorf("rendering (frame %d/%d): %w", currentFrame, frameCount, err)

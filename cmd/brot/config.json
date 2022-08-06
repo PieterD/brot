@@ -1,7 +1,8 @@
 {
-  "Width": 200,
-  "Height": 150,
-  "FPS": 10,
+  "Width": 400,
+  "Height": 300,
+  "FPS": 20,
+  "MaxIterations": 5000,
   "Path": [
     {
       "Zoom": 1.0,
@@ -16,20 +17,20 @@
     },
     {
       "Zoom":    100.0,
-      "TargetX": 0.38,
-      "TargetY":  0.383,
+      "TargetX": 0.38117,
+      "TargetY":  0.38521,
       "Duration": "2s"
     },
     {
       "Zoom":    1000.0,
-      "TargetX": 0.38,
-      "TargetY":  0.383,
+      "TargetX": 0.38117,
+      "TargetY":  0.38521,
       "Duration": "2s"
     },
     {
       "Zoom":     10.0,
-      "TargetX":  0.38,
-      "TargetY":  0.383,
+      "TargetX":  0.38117,
+      "TargetY":  0.38521,
       "Duration": "2s"
     },
     {
