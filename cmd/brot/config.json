@@ -1,0 +1,42 @@
+{
+  "Width": 200,
+  "Height": 150,
+  "FPS": 10,
+  "Path": [
+    {
+      "Zoom": 1.0,
+      "TargetX": 0.5,
+      "TargetY": 0.5
+    },
+    {
+      "Zoom":     10.0,
+      "TargetX":  0.4,
+      "TargetY":  0.4,
+      "Duration": "2s"
+    },
+    {
+      "Zoom":    100.0,
+      "TargetX": 0.38,
+      "TargetY":  0.383,
+      "Duration": "2s"
+    },
+    {
+      "Zoom":    1000.0,
+      "TargetX": 0.38,
+      "TargetY":  0.383,
+      "Duration": "2s"
+    },
+    {
+      "Zoom":     10.0,
+      "TargetX":  0.38,
+      "TargetY":  0.383,
+      "Duration": "2s"
+    },
+    {
+      "Zoom":     1.0,
+      "TargetX":  0.5,
+      "TargetY":  0.5,
+      "Duration": "2s"
+    }
+  ]
+}
